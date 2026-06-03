@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Zip app
+        run: ditto -c -k --keepParent Chaxie.app Chaxie.zip
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" Chaxie.zip \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "菜单栏番茄钟「茶歇」。下载解压即用，详见 README。"
